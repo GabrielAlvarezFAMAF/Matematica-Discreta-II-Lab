@@ -139,11 +139,6 @@ Grafo ConstruirGrafo(){
     u32 n,m; 
     Lados l = load_lados(&m,&n);
     l = ordenar_lados(l,2*m);
-    printf("LADOS : \n");
-    for(u32 t =0 ; t <2*m;t++){
-        printf("%u , %u \n",l[t].ladox , l[t].ladoy);
-    }
-    printf("\n");
     Grafo G =  inicializar_grafo(n,m); 
     assert(G != NULL);
     G = cargar_grafo(G,l);
@@ -152,8 +147,10 @@ Grafo ConstruirGrafo(){
 }
 void DestruirGrafo(Grafo G ){
     free(G->ver);
+    G->ver = NULL;
     free(G);
-    //assert(G==NULL);
+    G = NULL ;
+    assert(G==NULL);
 }
 u32 NumeroDeVertices(Grafo G)
 {
