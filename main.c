@@ -37,19 +37,17 @@ void printVecinos(Grafo G ){
     printf("print vecinos : \n");
     for(u32 i =0 ; i<G->numero_vertices; i++){
         printf("vecinos de %u : \n" , G->ver[i].nombre);
-        for(u32 j =0 ; j<G->ver[i].grado;j++)
-            printf(" %u ",G->ver[i].vecinos[j]);
+        for(u32 j =0 ; j<G->ver[i].grado;j++){
+            printf(" %u ,",G->ver[i].vecinos[j]);
+        }
+        printf("\n");
     }
-}/*guarda mal obvio */
-int main (int agrc, char * argv[]){
-    FILE *file = fopen(argv[0],"r");
-    if(file == NULL){
-        printf ("Archivo no encontrado \n");
-    }
+}
+int main (){
     Grafo g = ConstruirGrafo();
     printGrafo(g);
     printVecinos(g);
-    fclose(file);
+    DestruirGrafo(g);
     return 0;
 
 }

@@ -2,16 +2,11 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <stdio.h>
-/* Lados operators*/
-/*Reserva espacio de memoria para un array dinamico de  lados */
 Lados build_lados(u32 total_lados) {
     printf("entre a build lados \n");
     Lados l = (Lados)calloc(total_lados , sizeof (struct LadoSt)); 
     return l ; 
 }
-/* Importante pensar que si un lado viene dado por el par ordenado 
-(1,0) tambien tengo que incluir el (0,1)
-esto lo vamos a hacer en posiciones pares e impares*/
 Lados store_lados(Lados l , u32 x,u32 y , u32 i ){
     l[2*i].ladox = x ;
     l[2*i].ladoy = y ; 
@@ -19,9 +14,7 @@ Lados store_lados(Lados l , u32 x,u32 y , u32 i ){
     l[2*i+1].ladoy= x ;
     return l ;
 }
-/*------------------------------------------------------------------------------------------------*/
-/*                              FUNCION DE CHAT GPT PARA ORDENAR                                  */
-/* Usada por qsort */
+
 int comparar_lados(const void *a, const void *b)
 {
     LadoSt *x1 = (LadoSt *)a;
@@ -40,16 +33,13 @@ int comparar_lados(const void *a, const void *b)
     }
 }
 
-/* Ordena los lados con respecto a los x */
 Lados ordenar_lados(Lados l, u32 m)
 {
-    printf("entra ordenar_lados\n");
     qsort(l, m, sizeof(struct LadoSt), comparar_lados);
     return l ;
 }
 /*--------------------------------------------------------------------------------------------------------*/  
 Lados load_lados(u32 *m , u32 *n ){
-    printf("Entra load lados\n"); 
     u32 x = 0 , y = 0 , count = 0,i = 0;
     bool finder = false ; 
     Lados lados = NULL; 
@@ -102,33 +92,13 @@ bool busqueda_binaria_vertices(u32 numero, Grafo g ,u32 al) {
     return false; 
 }
 
-bool busqueda_binaria_vecinos(u32 numero, VerticeSt v ) {
-    /*indica si el vecino numero se encuentra dentro de v.vecinos*/
-    u32 inicio = 0;
-    u32 fin=0;
-    if (v.grado != 0 ){fin = v.grado - 1; }
-    
-    while (inicio <= fin) {
-        u32 medio = inicio + (fin - inicio) / 2; 
-        if (v.vecinos[medio] == numero) {
-            return true; 
-        } else if (v.vecinos[medio] < numero) {
-            inicio = medio + 1;
-        } else {
-            fin = medio - 1;
-        }
-    }
-    return false; 
-}
 /*4 Grafo */ 
 u32 *inicializar_vecinos(){
     u32 *vecinos = (u32 *) calloc(1, sizeof(u32));
     return vecinos;
-    //POSIBLES ERRORES EN ESTA FUNCION 
 }
 Grafo inicializar_grafo(u32 n, u32 m)
 {
-    printf("entra inicializar  Grafo\n");
     Grafo G = (Grafo)calloc(1, sizeof(struct GrafoSt));
     G->numero_vertices = n;
     G->numero_lados = m;
@@ -137,45 +107,43 @@ Grafo inicializar_grafo(u32 n, u32 m)
     return G;
 }
 Grafo cargar_grafo(Grafo g , Lados l ) {
-    printf("entra cargar Grafo\n");
     l = ordenar_lados(l , g->numero_lados*2);
-    u32 loaded =0 , i =0 , j=0;
-
-    while(j < g->numero_lados*2){
-        if(!busqueda_binaria_vertices(l[j].ladox,g ,i)){
-            g->ver[i].nombre = l[j].ladox; 
-            g->ver[i].c = 0 ; 
-            g->ver[i].vecinos=inicializar_vecinos();
-            i++;
-            for (u32 j =0 ; j< g->numero_lados ; j++){
-                if (g->ver[i].nombre == l[j].ladox){
-                    g->ver[i].vecinos = (u32*)realloc(g->ver[i].vecinos , (g->ver[i].grado+1) * sizeof(u32));
-                    g->ver[i].vecinos[j] = l[j].ladoy;
-                    g->ver[i].grado++;
-                    }else if (g->ver[i].nombre == l[j].ladoy &&
-                                !busqueda_binaria_vecinos(l[j].ladoy , g->ver[i]))
-                        {
-                            g->ver[i].vecinos = (u32*)realloc(g->ver[i].vecinos , (g->ver[i].grado+1) * sizeof(u32));
-                            g->ver[i].vecinos[j] = l[j].ladox;
+    u32 i =0 , k=0;
+    while(k < g->numero_lados*2){
+            if(!busqueda_binaria_vertices(l[k].ladox,g ,i)){
+                g->ver[i].nombre = l[k].ladox; 
+                g->ver[i].c = 0 ; 
+                g->ver[i].vecinos=inicializar_vecinos();
+                for (u32 q =0 ; q< (g->numero_lados)*2 ; q++){
+                    if (g->ver[i].nombre == l[q].ladox)
+                    {
+                        if (g->ver[i].grado ==0){
+                            g->ver[i].vecinos[g->ver[i].grado] = l[q].ladoy;
                             g->ver[i].grado++;
+                        }else{
+                        g->ver[i].vecinos = (u32*)realloc(g->ver[i].vecinos , (g->ver[i].grado) * sizeof(u32));
+                        g->ver[i].vecinos[g->ver[i].grado] = l[q].ladoy;
+                        g->ver[i].grado++;
                         }
-           }
-            if(g->delta < g->ver[i].grado){
-            g->delta = g->ver[i].grado;
+                    }
+                }                
+                if(g->delta < g->ver[i].grado){g->delta = g->ver[i].grado;}
+                i++;
             }
+            else{k++;}
         }
-        else{
-            j++;
-        }
-    }
-    return g;
+        return g;
     }
     /*complejidad aproximada O(n log n)*/
 Grafo ConstruirGrafo(){
-    printf("entra Construir Grafo\n");
     u32 n,m; 
     Lados l = load_lados(&m,&n);
     l = ordenar_lados(l,2*m);
+    printf("LADOS : \n");
+    for(u32 t =0 ; t <2*m;t++){
+        printf("%u , %u \n",l[t].ladox , l[t].ladoy);
+    }
+    printf("\n");
     Grafo G =  inicializar_grafo(n,m); 
     assert(G != NULL);
     G = cargar_grafo(G,l);
@@ -185,7 +153,7 @@ Grafo ConstruirGrafo(){
 void DestruirGrafo(Grafo G ){
     free(G->ver);
     free(G);
-    assert(G==NULL);
+    //assert(G==NULL);
 }
 u32 NumeroDeVertices(Grafo G)
 {
